@@ -41,7 +41,7 @@ async def on_ready():
           "{}".format(pingms) + Fore.GREEN + "ms\n" + Style.RESET_ALL)
     guilds_c = len(bot.guilds)
     await bot.change_presence(
-        activity=discord.Activity(name="🛡️ protecting {} guilds".format(guilds_c), type=discord.ActivityType.playing))
+        activity=discord.Activity(name="🛡️protecting {} guilds,!!help".format(guilds_c), type=discord.ActivityType.playing))
 
 
 @bot.event
@@ -217,15 +217,15 @@ async def on_member_join(member):
 
 @bot.command()
 async def help(ctx, page: str = None):
-    footer = "Sharbull Security - Developed by 647"
+    footer = "Sharbullは647によって開発されました。"
     icon_url = "https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678094-shield-512.png"
-    if page == "commands":
-        title = "About the commands",
-        description = "``!!setup`` : Open minimum configuration menu\n - Permission required : administrator\n\n"
-        "``!!mute <Member>`` : Mute a member and report their account to the Sharbull database\n - Permission required : mute members\n\n"
-        "``!!kick <Member>`` : Kick a member and report their account to the Sharbull database\n - Permission required : kick members\n\n"
-        "``!!ban <Member>`` : Ban a member and report their account to the Sharbull database\n - Permission required : ban members\n\n" \
-        "``!!report <Member> <reason>`` : Report an account to the server and to the Sharbull database\n - Permission required : None\n\n"
+    if page == "コマンド一覧":
+        title = "コマンドについて",
+        description = "``!!setup`` : 最低限の設定を開きます\n-必要な権限：管理者\n\n"
+        "``!!mute <Member>`` : メンバーをミュートし、アカウントをSharbullのデータベースに記録します\n - 必要な権限：メンバーのMUTE\n\n"
+        "``!!kick <Member>`` : メンバーをキックし、アカウントをSharbullデータベースに記録します\n - 必要な権限：メンバーのKICK\n\n"
+        "``!!ban <Member>`` : メンバーを禁止し、Sharbullデータベースにアカウントを記録します\n - 必要な権限 : メンバーのBAN\n\n" \
+        "``!!report <Member> <reason>`` :アカウントをサーバーとSharbullデータベースに記録します\n - 必要な権限：なし\n\n"
 
     elif page == "security":
         title = "About the security"
