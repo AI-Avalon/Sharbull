@@ -15,10 +15,10 @@ def get_prefix(client, message):
 
 def seconds_to_text(secs):
     days, hours, minutes, seconds = seconds_to_dhms(secs)
-    result = ("{0} 日{1}, ".format(days, "s" if days!=1 else "") if days else "") + \
-    ("{0} 時間{1}, ".format(hours, "s" if hours!=1 else "") if hours else "") + \
-    ("{0} 分{1}, ".format(minutes, "s" if minutes!=1 else "") if minutes else "") + \
-    ("{0:.2f} 秒{1} 前".format(seconds, "s" if seconds!=1 else "") if seconds else "")
+    result = ("{0} 日{1}, ".format(days, "" if days!=1 else "") if days else "") + \
+    ("{0} 時間{1}, ".format(hours, "" if hours!=1 else "") if hours else "") + \
+    ("{0} 分{1}, ".format(minutes, "" if minutes!=1 else "") if minutes else "") + \
+    ("{0:.2f} 秒{1} 前に作成".format(seconds, "" if seconds!=1 else "") if seconds else "")
     return result
 
 
