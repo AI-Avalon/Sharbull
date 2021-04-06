@@ -20,17 +20,17 @@ class SetupCommandsCog(commands.Cog):
         verified_emoji = "✅ " if verified_role_id is not None else "❌ "
         captcha_emoji = "✅ " if captcha_level is not None else "❌ "
         activated_emoji = "✅ " if security_activated is not None else "❌ "
-        embed = discord.Embed(title="Welcome to Sharbull Security Bot!",
-                              description="In order to initially setup Sharbull, you will have to execute a few steps:\n\n" +
-                                          "**1.** " + log_emoji + "``"+prefix+"set_log_channel`` in a text channel you want the logs to be posted in.\n\n" +
-                                          "**2.** " + verified_emoji + "``"+prefix+"set_verified_role @a_role`` replace @a_role by the role you want users to get when they get approved by the bot\n\n" +
-                                          "**3.** Edit channels permissions to restrict access to Verified users only.\n\n" +
-                                          "**4.** " + captcha_emoji + "``"+prefix+"set_captcha_level <level (1, 2, or 3)>`` to setup captcha policy (learn more with ``"+prefix+"help security``\n" +
-                                          " > Level ``1`` : No captcha verification\n" +
-                                          " > Level ``2`` : Verification for suspicious users only (recommended)\n" +
-                                          " > Level ``3`` : Verification for everyone\n" +
-                                          "⚠️ Caution : Users must authorize direct messages from servers, otherwise verification will be impossible.\n\n"+
-                                          "**5.** " + activated_emoji + "``"+prefix+"activate`` to start security services"
+        embed = discord.Embed(title="Sharbull Security Botへようこそ！",
+                              description="Sharbullを最初にセットアップするには、いくつかの手順を実行する必要があります。\n\n" +
+                                          "**1.** " + log_emoji + "``"+prefix+"set_log_channel`` ログを投稿するテキストチャネルでコマンドを実行してください。\n\n" +
+                                          "**2.** " + verified_emoji + "``"+prefix+"set_verified_role @a_role`` ユーザーがボットによって承認されたときに取得するロールを @a_role に置き換えて実行してください。\n\n" +
+                                          "**3.** チャネルのアクセス許可を編集して、確認済みユーザーのみにアクセスを制限します。\n\n" +
+                                          "**4.** " + captcha_emoji + "``"+prefix+"set_captcha_level <level (1, 2, or 3)>`` キャプチャポリシーを設定するには（詳細については、 ``"+prefix+"help security``\n" +
+                                          " > Level ``1`` : キャプチャ検証なし\n" +
+                                          " > Level ``2`` : 疑わしいユーザーのみの検証（推奨）\n" +
+                                          " > Level ``3`` : すべての人のための検証\n" +
+                                          "⚠️ 注意 : ユーザーはサーバーからのダイレクトメッセージを承認する必要があります。そうしないと、検証が不可能になります。\n\n"+
+                                          "**5.** " + activated_emoji + "``"+prefix+"activate`` セキュリティサービスを開始するにはこのコマンドを実行してください。"
                               )
         await ctx.send(embed=embed)
 
@@ -41,7 +41,7 @@ class SetupCommandsCog(commands.Cog):
     async def set_log_channel(self, ctx):
         add_guild(ctx.guild.id)
         set_guild_setting(ctx.guild.id, new_log_channel_id=ctx.channel.id)
-        message = "✅ {.mention} is now your logging channel".format(ctx.channel)
+        message = "✅ {.mention} がログチャンネルに設定されました。".format(ctx.channel)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
 
@@ -52,7 +52,7 @@ class SetupCommandsCog(commands.Cog):
     async def set_verified_role(self, ctx, role: discord.Role):
         add_guild(ctx.guild.id)
         set_guild_setting(ctx.guild.id, new_verified_role_id=role.id)
-        message = "✅ {.mention} is now your verified role".format(role)
+        message = "✅ {.mention} が確認済みのロールになります。".format(role)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
 
@@ -66,7 +66,7 @@ class SetupCommandsCog(commands.Cog):
         if level > 3:
             level = 3
         set_guild_setting(ctx.guild.id, new_captcha_level=level)
-        message = "✅ Captcha level has been set to **{}**".format(level)
+        message = "✅ キャプチャレベルは**{}**に設定されています".format(level)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
 
@@ -77,12 +77,12 @@ class SetupCommandsCog(commands.Cog):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
         prefix = get_prefix(self, ctx.message)
         if log_channel_id is None or verified_role_id is None or captcha_level is None:
-            message = "⚠️Please perform the initial steps to setup your protection"
+            message = "⚠️保護を設定するための最初の手順を実行してください"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
         else:
             set_guild_setting(ctx.guild.id, new_security_activated=True)
-            message = "✅ Protection is now enabled, run ``"+prefix+"deactivate`` to disable"
+            message = "✅ 保護が有効になりました, 無効にするには ``"+prefix+"deactivate``と実行してください。"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
 
@@ -93,11 +93,11 @@ class SetupCommandsCog(commands.Cog):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
         prefix = get_prefix(self, ctx.message)
         if log_channel_id is None or verified_role_id is None or captcha_level is None:
-            message = "⚠️Please perform the initial steps to setup your protection"
+            message = "⚠️保護を設定するための最初の手順を実行してください"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
         else:
             set_guild_setting(ctx.guild.id, new_security_activated=None)
-            message = "✅ Protection is now disabled, run ``"+prefix+"activate`` to enable"
+            message = "✅ 保護が無効になりました。, 有効化するには ``"+prefix+"activate`` と実行してください。"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)

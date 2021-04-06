@@ -86,7 +86,7 @@ def increase_user_flag(user_id: int, captcha_fails_to_add=None, mutes_to_add=Non
         with open(path_flags, 'w') as f:
             json.dump(new_flags, f)
     else:
-        print("Write skipped, last flags edit :",(datetime.datetime.now() - tmt).total_seconds(), "seconds ago")
+        print("書き込みをスキップし、最後のフラグを編集します:",(datetime.datetime.now() - tmt).total_seconds(), "数秒前")
 
 
 def add_user(user_id: int):

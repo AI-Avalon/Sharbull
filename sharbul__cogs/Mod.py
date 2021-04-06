@@ -16,11 +16,11 @@ class ModCommandsCog(commands.Cog):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
         try:
             await member.remove_roles(ctx.guild.get_role(verified_role_id))
-            message = "✅ Member {.mention} has been muted (removed {.mention})".format(member,
+            message = "✅ メンバー {.mention} ミュートされました（削除されました {.mention})".format(member,
                                                                                        ctx.guild.get_role(
                                                                                            verified_role_id))
         except:
-            message = "✅ Member {.mention} has already been been muted (removed {.mention})".format(member,
+            message = "✅ メンバー {.mention} すでにミュートされています（削除されました {.mention})".format(member,
                                                                                                     ctx.guild.get_role(
                                                                                                         verified_role_id))
 
@@ -36,7 +36,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def kick(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ Member {.mention} has been kicked".format(member)
+        message = "✅ メンバー {.mention} はKICKされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.kick()
@@ -50,7 +50,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def ban(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ Member {.mention} has been banned".format(member)
+        message = "✅ メンバー {.mention} はBANされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.ban()
@@ -72,16 +72,16 @@ class ModCommandsCog(commands.Cog):
                 alert_activated = alerts[str(ctx.guild.id)]
                 if alert_activated is False:
                     alerts[str(ctx.guild.id)] = True
-                    message = "✅ Alert mode is activated, any spamming member will be banned without a warning."
+                    message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
                 else:
                     alerts[str(ctx.guild.id)] = False
-                    message = "✅ Alert mode is deactivated"
+                    message = "✅ アラートモードが無効になりました。"
 
             except KeyError:
                 alerts[str(ctx.guild.id)] = True
-                message = "✅ Alert mode is activated, any spamming member will be banned without a warning."
+                message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
             except:
-                print("oh no an error")
+                print("エラーはありません")
 
             with open('config/alerts.json', 'w') as f:
                 json.dump(alerts, f, indent=4)
@@ -91,7 +91,7 @@ class ModCommandsCog(commands.Cog):
             if ctx.guild.get_channel(log_channel_id) is not None:
                 await log(ctx.guild.get_channel(log_channel_id), message)
         else:
-            message = "⚠️Security services are not enabled, cannot toggle ALERT mode"
+            message = "⚠️セキュリティサービスが有効になっておらず、ALERTモードを切り替えることができません"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
 
@@ -106,6 +106,6 @@ class ModCommandsCog(commands.Cog):
         with open('config/customprefixes.json', 'w') as f:
             json.dump(prefixes, f, indent=4)
 
-        message = "✅ Prefix is now ``{}``".format(prefix)
+        message = "✅ Prefixは現在 ``{}``".format(prefix)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
