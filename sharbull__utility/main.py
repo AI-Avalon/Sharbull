@@ -33,11 +33,11 @@ def seconds_to_dhms(secs):
 async def log(channel: discord.TextChannel, message: str):
     if channel is not None:
         embed = discord.Embed(title="新しいログ", description=message, timestamp=datetime.utcnow())
-        embed.set_footer(text="Sharbull Security Bot - Timezone : GMT",
+        embed.set_footer(text="Sharbull Security Bot - Timezone : UTC",
                          icon_url="https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678094-shield-512.png")
         await channel.send(embed=embed)
     else:
-        print("ログの設定なし")
+        print("ログは設定されていません")
 
 
 def return_info(member: discord.Member, message = ""):
@@ -49,44 +49,44 @@ def return_info(member: discord.Member, message = ""):
     time_since_creation = time_since_creation.total_seconds()
     time_since_creation_fmt = seconds_to_text(time_since_creation)
 
-    message += "アカウントの作成： " + time_since_creation_fmt + "\n\n ** 目立つフラグ **:\n"
+    message += "アカウント作成日時： " + time_since_creation_fmt + "\n\n ** 所有しているバッジ **:\n"
     # trust
     days, hours, minutes, seconds = seconds_to_dhms(time_since_creation)
     if days < 1:
-        message += " 	🚩 アカウントは1日以内に作成されました\n"
+        message += " 	🚩 アカウントは1日以内に作成されました。\n"
         trust_score -= 3
     if member.avatar_url == member.default_avatar_url:
-        message += " 	🚩 アカウントにはカスタムアバターがありません\n"
+        message += " 	🚩 アカウントのアバターがデフォルトです。\n"
         trust_score -= 2
     if member.public_flags.hypesquad is False:
-        message += "⚠️ アカウントにはHypeSquadチームがありません\n"
+        message += "⚠️ アカウントはどのHypeSquadチームにも属していません。\n"
         trust_score -= 1
     if member.premium_since is None:
-        message += "⚠️ アカウントにNitroアクティブサブがありません\n"
+        message += "⚠️ アカウントに有効なNitroサブスクがありません。\n"
         trust_score -= 1
     if member.public_flags.partner is False:
-        message += "⚠️ アカウントにパートナーバッジがありません\n"
+        message += "⚠️ アカウントにパートナーバッジがありません。\n"
         trust_score -= 1
     if member.public_flags.early_supporter is False:
-        message += "⚠️ アカウントに早期サポーターバッジがありません\n"
+        message += "⚠️ アカウントに早期サポーターバッジがありません。\n"
         trust_score -= 1
     if captcha_fails > 5:
-        message += "⚠️ アカウントがキャプチャ** {} **回失敗しました\n".format(captcha_fails)
+        message += "⚠️ アカウントがCaptcha認証に** {} **回失敗しました。\n".format(captcha_fails)
         trust_score -= 1
     if mutes > 6:
-        message += " 	🚩 アカウントが** {} **回ミュートされました\n".format(mutes)
+        message += " 	🚩 アカウントが過去に** {} **回ミュートされます。\n".format(mutes)
         trust_score -= 1
     if reports > 5:
-        message += " 	🚩 アカウントは** {} **回報告されています\n".format(reports)
+        message += " 	🚩 アカウントは過去に** {} **回報告されています。\n".format(reports)
         trust_score -= 1
     if kicks > 3:
-        message += " 	🚩 アカウントが** {} **回キックされました\n".format(kicks)
+        message += " 	🚩 アカウントは過去に** {} **回キックされています。\n".format(kicks)
         trust_score -= 1
     if bans > 2:
-        message += " 	🚩 アカウントは** {} **回BANされました\n".format(bans)
+        message += " 	🚩 アカウントは過去に** {} **回BANされています。\n".format(bans)
         trust_score -= 1
 
-    message += ("🔍 信頼スコアは ``" + str(trust_score)+"``")
+    message += ("🔍 信頼スコアは `" + str(trust_score)+"`です。")
 
     return message, trust_score
 

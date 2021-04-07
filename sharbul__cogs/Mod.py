@@ -14,15 +14,16 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def mute(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
+        # noinspection PyBroadException
         try:
             await member.remove_roles(ctx.guild.get_role(verified_role_id))
-            message = "✅ メンバー {.mention} ミュートされました（削除されました {.mention})".format(member,
-                                                                                       ctx.guild.get_role(
-                                                                                           verified_role_id))
-        except:
-            message = "✅ メンバー {.mention} すでにミュートされています（削除されました {.mention})".format(member,
-                                                                                                    ctx.guild.get_role(
-                                                                                                        verified_role_id))
+            message = "✅ {.mention} はミュートされました（{.mention} が剥奪されました。)".format(member,
+                                                                             ctx.guild.get_role(
+                                                                                 verified_role_id))
+        except Exception:
+            message = "✅ {.mention} は既にミュートされています（{.mention} が剥奪されました。)".format(member,
+                                                                                ctx.guild.get_role(
+                                                                                    verified_role_id))
 
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
@@ -36,7 +37,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def kick(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ メンバー {.mention} はKICKされました。".format(member)
+        message = "✅ {.mention} はキックされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.kick()
@@ -50,7 +51,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def ban(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ メンバー {.mention} はBANされました。".format(member)
+        message = "✅ {.mention} はBANされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.ban()
@@ -68,19 +69,20 @@ class ModCommandsCog(commands.Cog):
             message = ""
             with open('config/alerts.json', 'r') as f:
                 alerts = json.load(f)
+            # noinspection PyBroadException
             try:
                 alert_activated = alerts[str(ctx.guild.id)]
                 if alert_activated is False:
                     alerts[str(ctx.guild.id)] = True
-                    message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
+                    message = "✅ 警戒モードが有効になりました。スパムを行ったユーザーは警告なしにBANされます"
                 else:
                     alerts[str(ctx.guild.id)] = False
-                    message = "✅ アラートモードが無効になりました。"
+                    message = "✅ 警戒モードが無効になりました。"
 
             except KeyError:
                 alerts[str(ctx.guild.id)] = True
-                message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
-            except:
+                message = "✅ 警戒モードが有効になりました。スパムを行ったユーザーは警告なしにBANされます"
+            except Exception:
                 print("エラーはありません")
 
             with open('config/alerts.json', 'w') as f:
@@ -91,7 +93,7 @@ class ModCommandsCog(commands.Cog):
             if ctx.guild.get_channel(log_channel_id) is not None:
                 await log(ctx.guild.get_channel(log_channel_id), message)
         else:
-            message = "⚠️セキュリティサービスが有効になっておらず、ALERTモードを切り替えることができません"
+            message = "⚠️セキュリティが有効になっておらず、警告モードを切り替えることができません。"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
 
@@ -106,6 +108,6 @@ class ModCommandsCog(commands.Cog):
         with open('config/customprefixes.json', 'w') as f:
             json.dump(prefixes, f, indent=4)
 
-        message = "✅ Prefixは現在 ``{}``".format(prefix)
+        message = "✅ Prefixは現在 `{}` です。".format(prefix)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)

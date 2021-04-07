@@ -1,17 +1,16 @@
-import discord
-from discord.ext import commands
-from sharbull__utility.main import seconds_to_text, seconds_to_dhms, log, return_info
-from sharbull__db.main import *
-from sharbul__cogs import Tasks
-from colorama import Fore, Style, init
-from datetime import datetime, timedelta
-from captcha import image
+import asyncio
 import random
 import string
-import asyncio
-import os
-from AntiSpam import AntiSpamHandler
-from AntiSpam.ext import AntiSpamTracker
+from datetime import datetime
+
+import discord
+from captcha import image
+from colorama import Fore, Style
+from discord.ext import commands
+
+from sharbul__cogs import Tasks
+from sharbull__db.main import *
+from sharbull__utility.main import log, return_info
 
 
 class EventsCog(commands.Cog):
@@ -21,14 +20,14 @@ class EventsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(Fore.GREEN + Style.BRIGHT +
-              '正常に接続されました。 [{}]'.format(self.bot.user))
-        pingms = round(self.bot.latency * 1000)
-        print("司令官の待ち時間 : " + Fore.YELLOW +
-              "{}".format(pingms) + Fore.GREEN + "ms\n" + Style.RESET_ALL)
+              '接続に成功しました。 [{}]'.format(self.bot.user))
+        ping_ms = round(self.bot.latency * 1000)
+        print("レイテンシ : " + Fore.YELLOW +
+              "{}".format(ping_ms) + Fore.GREEN + "ms\n" + Style.RESET_ALL)
 
         if len(self.bot.guilds) < 20:
             for server in self.bot.guilds:
-                print(server.name,server.id)
+                print(server.name, server.id)
         Tasks.BackgroundTasks.update_presence.start(self)
 
     @commands.Cog.listener()
@@ -43,36 +42,38 @@ class EventsCog(commands.Cog):
             alert_activated = False
             with open('config/alerts.json', 'r') as f:
                 alerts = json.load(f)
+            # noinspection PyBroadException
             try:
                 alert_activated = alerts[str(message.guild.id)]
                 if alert_activated is False:
                     pass
                 else:
                     points = 99
-            except:
+            except Exception:
                 pass
 
-            message_log = "User {.mention}".format(msg.author) + " - 悪評ポイント : " + str(points) + "\n"
+            message_log = "ユーザー {.mention}".format(msg.author) + " - マイナス評価ポイント : " + str(points) + "\n"
             if points <= 3:
-                message_log += "ユーザーに警告が表示されました"
-                description = "{.mention} : スパムを辞めてください。-ミュートする前に警告します : {}".format(msg.author, 3-points)
+                message_log += "ユーザーが警告されました。"
+                description = "{.mention} : スパムをやめて下さい。-ミュート前の警告 : {}".format(msg.author, 3 - points)
             elif points <= 6:
-                message_log += "ユーザーがミュートされました（確認済みの役割が削除されました）"
-                description = "{.mention} スパムのためにミュートされています-キックの前に警告します : {} ".format(message.author, 6-points)
+                message_log += "ユーザーがミュートされました（認証済みロールは剥奪済み）"
+                description = "{.mention} スパムのためにミュートされています- キックの前の警告 : {} ".format(message.author, 6 - points)
                 await msg.author.remove_roles(msg.guild.get_role(verified_role_id))
                 increase_user_flag(user_id=msg.author.id, mutes_to_add=1)
             elif points <= 9:
-                message_log += "ユーザーがKICKされました"
-                description="{.mention} スパムをしたためKICKされました。-BAN前に警告 : {}".format(msg.author, 12-points)
+                message_log += "ユーザーがキックされました"
+                description = "{.mention} はスパムを行ったためキックされました。-BAN前の警告 : {}".format(msg.author, 12 - points)
                 increase_user_flag(user_id=msg.author.id, kicks_to_add=1)
-                await msg.author.kick(reason="スパム")
+                await msg.author.kick(reason="スパム行為")
             else:
                 alert_message = ""
                 if alert_activated is True:
-                    alert_message = "-アラートモードがアクティブになりました。"
+                    alert_message = "-警戒モードが有効になりました。"
 
                 message_log += "ユーザーがBANされました"
-                description="{.mention} スパム行為が禁止されました {} - **アラートモードが有効になりました**, スパムメンバーは警告なしにBANされます".format(msg.author, alert_message)
+                description = "{.mention} はスパムを行ったためBANされました。 {} - **警戒モードが有効になりました**。スパムを行ったユーザーは警告なしにBANされます".format(
+                    msg.author, alert_message)
                 alerts[str(message.guild.id)] = True
                 with open('config/alerts.json', 'w') as f:
                     json.dump(alerts, f, indent=4)
@@ -89,28 +90,27 @@ class EventsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         now = datetime.now().strftime("%Y %m %d - %H:%M:%S")
-        print(now, "新しいキャプチャが開始されました", member.id)
+        print(now, "新しいCaptcha認証が開始されました。ユーザー：", member.id)
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(member.guild.id)
         if security_activated is None or member.bot is True:
             return False
 
         add_user(member.id)
 
-
-        message = "**新しいメンバーが加わりました** : " + member.mention + "\n"
+        message = "**新しいメンバーが参加しました。** : " + member.mention + "\n"
 
         message, trust_score = return_info(member, message)
 
         await log(member.guild.get_channel(log_channel_id), message)
 
-
         if captcha_level == 2 and trust_score > 9:
-            await log(member.guild.get_channel(log_channel_id), "{.mention}'s 信頼スコアが十分に高いためキャプチャをスキップしました。".format(member))
+            await log(member.guild.get_channel(log_channel_id),
+                      "{.mention}の信頼スコアが基準に達しているためCaptcha認証をスキップしました。".format(member))
             if member.guild.get_role(verified_role_id) is not None:
                 await member.add_roles(member.guild.get_role(verified_role_id))
             return True
         if captcha_level == 1:
-            await log(member.guild.get_channel(log_channel_id), "キャプチャが無効になっているため、確認をスキップしました。")
+            await log(member.guild.get_channel(log_channel_id), "Captcha認証が無効のため、認証をスキップしました。")
             if member.guild.get_role(verified_role_id) is not None:
                 await member.add_roles(member.guild.get_role(verified_role_id))
             return True
@@ -121,42 +121,45 @@ class EventsCog(commands.Cog):
             string_to_guess += char
         image_data = image.ImageCaptcha(width=280, height=90).generate_image(string_to_guess)
         image_data.save("captcha/" + str(member.id) + ".png")
-        embed = discord.Embed(title="ようこそ！ **{}**".format(member.guild.name),
-                              description="続行するには、次のキャプチャを完了してください。\n" +
-                                          "**60**秒以内に返信しないと、アクセスが拒否されます。" +
-                                          "\n**小文字**の文字のみがあります（数字はありません）。"  # in bold because ppl cant read
+        embed = discord.Embed(title="**{}** へようこそ！".format(member.guild.name),
+                              description="続行するには、次のCaptcha認証を完了してください。\n" +
+                                          "**60**秒以内に返信しなければアクセスが拒否されます。" +
+                                          "\n文字は**小文字のみ**です。数字は含まれていません。"  # in bold because ppl cant read
                               )
         embed.set_thumbnail(url=member.guild.icon_url)
         embed.set_footer(
-            text="Sharbull SecurityGuard-このサーバーは高度なセキュリティ検証を実施します",
+            text="Sharbull SecurityGuard-このサーバーでは高度なセキュリティ認証が実施されています。",
             icon_url="https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678094-shield-512.png"
         )
         file = discord.File("captcha/" + str(member.id) + ".png", filename="image.png")
         embed.set_image(url="attachment://image.png")
+        # noinspection PyBroadException
         try:
             await member.send(
                 embed=embed,
                 file=file
             )
-        except:
+        except Exception:
             if log_channel_id is not None:
-                message = ("⚠️ エラー！ キャプチャ検証を送信できませんでした, {.mention} のDMは閉じています。 ユーザーは手動による承認を待っています。".format(
+                message = ("⚠️ エラー！ Captcha認証を送信できませんでした。 {.mention} はDMを拒否しています。 ユーザーは手動の承認待ちです。".format(
                     member
                 ))
                 await log(member.guild.get_channel(log_channel_id), message)
                 return False
-        #await member.send(file=discord.File("captcha/" + str(member.id) + ".png"))
 
-        def check(message):
-            return message.content == string_to_guess and message.channel == message.author.dm_channel
+        # await member.send(file=discord.File("captcha/" + str(member.id) + ".png"))
+
+        def check(received_message):
+            return received_message.content == string_to_guess and \
+                   received_message.channel == received_message.author.dm_channel
 
         try:
-            message = await self.bot.wait_for('message', timeout=60.0, check=check)
+            await self.bot.wait_for('message', timeout=60.0, check=check)
         except asyncio.TimeoutError:
             embed = discord.Embed(
-                title="時間を超えました。検証に失敗しました。",
-                description="あなたは**{}**からKICKされました。.\n".format(member.guild.name) +
-                            "サーバーに再度参加して、再試行してください。"
+                title="時間を超過しました。認証に失敗しました。",
+                description="あなたは**{}**からキックされました。\n".format(member.guild.name) +
+                            "サーバーに再度参加して再試行してください。"
             )
             embed.set_thumbnail(url=member.guild.icon_url)
             embed.set_footer(
@@ -164,23 +167,24 @@ class EventsCog(commands.Cog):
                 icon_url="https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678094-shield-512.png"
             )
             await member.dm_channel.send(embed=embed)
-            await member.kick(reason="ユーザーがキャプチャの検証に失敗しました")
+            await member.kick(reason="ユーザーがCaptcha認証に失敗しました")
             increase_user_flag(user_id=member.id, captcha_fails_to_add=1)
         else:
             embed = discord.Embed(
-                title="検証に成功しました。",
-                description="ようこそ！ **{}**".format(member.guild.name)
+                title="認証に成功しました。",
+                description="**{}** へようこそ！".format(member.guild.name)
             )
             embed.set_thumbnail(url=member.guild.icon_url)
             embed.set_footer(
                 text="Sharbull Security Guard",
                 icon_url="https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678094-shield-512.png"
             )
+            # noinspection PyBroadException
             try:
                 await member.dm_channel.send(embed=embed)
-            except:
+            except Exception:
                 if log_channel_id is not None:
-                    message = ("⚠️ エラー！ キャプチャ検証を送信できませんでした, {.mention}のDMは閉じています。".format(
+                    message = ("⚠️ Captcha認証を送信できませんでした。 {.mention} はDMを拒否しています。".format(
                         member
                     ))
                     await log(member.guild.get_channel(log_channel_id), message)
