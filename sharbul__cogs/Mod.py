@@ -93,7 +93,7 @@ class ModCommandsCog(commands.Cog):
             if ctx.guild.get_channel(log_channel_id) is not None:
                 await log(ctx.guild.get_channel(log_channel_id), message)
         else:
-            message = "⚠️セキュリティが有効になっておらず、警告モードを切り替えることができません。"
+            message = "⚠️セキュリティが有効になっておらず、警戒モードを切り替えることができません。"
             embed = discord.Embed(description=message)
             await ctx.send(embed=embed)
 
