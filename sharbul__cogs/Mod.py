@@ -14,16 +14,15 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def mute(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        # noinspection PyBroadException
         try:
             await member.remove_roles(ctx.guild.get_role(verified_role_id))
-            message = "✅ {.mention} はミュートされました（{.mention} が剥奪されました。)".format(member,
-                                                                             ctx.guild.get_role(
-                                                                                 verified_role_id))
-        except Exception:
-            message = "✅ {.mention} は既にミュートされています（{.mention} が剥奪されました。)".format(member,
-                                                                                ctx.guild.get_role(
-                                                                                    verified_role_id))
+            message = "✅ メンバー {.mention} ミュートされました（削除されました {.mention})".format(member,
+                                                                                       ctx.guild.get_role(
+                                                                                           verified_role_id))
+        except:
+            message = "✅ メンバー {.mention} すでにミュートされています（削除されました {.mention})".format(member,
+                                                                                                    ctx.guild.get_role(
+                                                                                                        verified_role_id))
 
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
@@ -37,7 +36,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def kick(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ {.mention} はキックされました。".format(member)
+        message = "✅ メンバー {.mention} はKICKされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.kick()
@@ -51,7 +50,7 @@ class ModCommandsCog(commands.Cog):
     @commands.command()
     async def ban(self, ctx, member: discord.Member):
         log_channel_id, verified_role_id, captcha_level, security_activated = check_guild_setup(ctx.guild.id)
-        message = "✅ {.mention} はBANされました。".format(member)
+        message = "✅ メンバー {.mention} はBANされました。".format(member)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
         await member.ban()
@@ -69,20 +68,19 @@ class ModCommandsCog(commands.Cog):
             message = ""
             with open('config/alerts.json', 'r') as f:
                 alerts = json.load(f)
-            # noinspection PyBroadException
             try:
                 alert_activated = alerts[str(ctx.guild.id)]
                 if alert_activated is False:
                     alerts[str(ctx.guild.id)] = True
-                    message = "✅ 警戒モードが有効になりました。スパムを行ったユーザーは警告なしにBANされます"
+                    message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
                 else:
                     alerts[str(ctx.guild.id)] = False
-                    message = "✅ 警戒モードが無効になりました。"
+                    message = "✅ アラートモードが無効になりました。"
 
             except KeyError:
                 alerts[str(ctx.guild.id)] = True
-                message = "✅ 警戒モードが有効になりました。スパムを行ったユーザーは警告なしにBANされます"
-            except Exception:
+                message = "✅ アラートモードがアクティブになり、スパムメンバーは警告なしに禁止されます。"
+            except:
                 print("エラーはありません")
 
             with open('config/alerts.json', 'w') as f:
@@ -108,6 +106,6 @@ class ModCommandsCog(commands.Cog):
         with open('config/customprefixes.json', 'w') as f:
             json.dump(prefixes, f, indent=4)
 
-        message = "✅ Prefixは現在 `{}` です。".format(prefix)
+        message = "✅ Prefixは現在 ``{}``".format(prefix)
         embed = discord.Embed(description=message)
         await ctx.send(embed=embed)
