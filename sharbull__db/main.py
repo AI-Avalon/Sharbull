@@ -92,9 +92,10 @@ def increase_user_flag(user_id: int, captcha_fails_to_add=None, mutes_to_add=Non
 
 def add_user(user_id: int):
     try:
+        # noinspection PyBroadException
         try:
             os.mkdir("user/" + str(user_id))
-        except:
+        except Exception:
             pass
         path_user_flags = "user/" + str(user_id) + "/flags.json"
 
